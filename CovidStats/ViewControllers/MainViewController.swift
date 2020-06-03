@@ -45,7 +45,7 @@ func dateFormat() -> String {
         date = formatter.date(from: stringDate)
     }
     formatter.locale = Locale(identifier: "en_EN")
-    formatter.dateStyle = .long
+    formatter.dateStyle = .full
     let outputDate = formatter.string(from: date ?? Date())
     return outputDate
     }
