@@ -25,15 +25,17 @@ class MainViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // setting up searchController
+        title = dateFormat()
+        configureSearchController()
+        getData()
+    }
+    
+    func configureSearchController() {
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
         searchController.searchBar.placeholder = "Search Country"
         navigationItem.searchController = searchController
         definesPresentationContext = true
-        
-        getData()
-        title = dateFormat()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
