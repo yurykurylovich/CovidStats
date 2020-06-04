@@ -11,29 +11,59 @@ import Alamofire
 
 class MainViewController: UITableViewController {
     
+    let searchController = UISearchController(searchResultsController: nil)
+    var isSearchBarEmpty: Bool {
+        return searchController.searchBar.text?.isEmpty ?? true
+    }
+    var isFiltering: Bool {
+        searchController.isActive && !isSearchBarEmpty
+    }
     var countriesList: [Countries] = []
+    var filteredCountries: [Countries] = []
     var date = String()
     let url = URL(string: "https://api.covid19api.com/summary")
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // setting up searchController
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search Country"
+        navigationItem.searchController = searchController
+        definesPresentationContext = true
+        
         getData()
         title = dateFormat()
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if isFiltering {
+            return filteredCountries.count
+        }
         return countriesList.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "CountryCell", for: indexPath)
-        let item = countriesList[indexPath.row]
-        
+        let item: Countries
+        if isFiltering {
+            item = filteredCountries[indexPath.row]
+        } else {
+            item = countriesList[indexPath.row]
+        }
+    //    let item = countriesList[indexPath.row]
         cell.textLabel?.text = item.country
         cell.detailTextLabel?.text = String(item.totalConfirmed)
         return cell
         }
     
+    func filteredCountries(_ searchText: String) {
+        filteredCountries = countriesList.filter {
+            (country:Countries) -> Bool in
+            return country.country.lowercased().contains(searchText.lowercased())
+        }
+        tableView.reloadData()
+    }
 
 func dateFormat() -> String {
     let stringDate = date
@@ -53,8 +83,6 @@ func dateFormat() -> String {
 
 extension MainViewController {
     func getData() {
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
         guard let url = url else { return }
         AF.request(url)
         .validate()
@@ -66,6 +94,13 @@ extension MainViewController {
                 self.tableView.reloadData()
                 }
         }
+    }
+}
+
+extension MainViewController: UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchBar = searchController.searchBar
+        filteredCountries(searchBar.text!)
     }
 }
 
